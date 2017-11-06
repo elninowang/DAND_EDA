@@ -56,4 +56,6 @@ qplot(x = color, y = price/carat, data = diamonds,
            geom = 'boxplot')
 
 # 克拉频率多边形
+qplot(x = carat, data = diamonds, binwidth=0.01,
+      geom='freqpoly')
 
