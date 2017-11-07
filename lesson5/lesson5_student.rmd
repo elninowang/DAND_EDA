@@ -1,6 +1,13 @@
 Lesson 5
 ========================================================
 
+```{r}
+library(ggplot2)
+library(dplyr)
+pf <- read.csv('../lesson4/pseudo_facebook.tsv', sep = '\t')
+```
+
+
 ### Multivariate Data
 Notes:
 
@@ -15,8 +22,22 @@ Notes:
 Notes:
 
 ```{r Third Qualitative Variable}
-ggplot(aes(x = gender, y = age),
-       data = subset(pf, !is.na(gender))) + geom_histogram()
+ggplot(aes(x = age, y = friend_count),
+       data = subset(pf, !is.na(gender))) + 
+  geom_line(aes(color = gender), stat = 'summary', fun.y = median)
+```
+
+```{r}
+pf.fc_by_age_gender <- pf %>%
+  filter(!is.na(gender)) %>%
+  group_by(age, gender) %>%
+  summarise(mean_friend_count = mean(friend_count),
+            median_friend_count = median(friend_count),
+            n = n()) %>%
+  ungroup() %>%
+  arrange(age)
+
+head(pf.fc_by_age_gender)
 ```
 
 ***
@@ -25,7 +46,9 @@ ggplot(aes(x = gender, y = age),
 Notes:
 
 ```{r Plotting Conditional Summaries}
-
+ggplot(aes(x = age, y = mean_friend_count, color = gender), 
+              data = subset(pf.fc_by_age_gender, !is.na(gender))) +
+  geom_line()
 ```
 
 ***
@@ -47,6 +70,22 @@ Notes:
 install.packages('reshape2')
 library(reshape2)
 ```
+```{r}
+pf.fc_by_age_gender.wide <- dcast(pf.fc_by_age_gender,
+                                  age ~ gender, 
+                                  value.var = 'median_friend_count')
+head(pf.fc_by_age_gender.wide)
+```
+
+```{r}
+pf.fc_by_age_gender.tmp <- subset(pf.fc_by_age_gender[c('age', 'gender', 'median_friend_count')], !is.na(gender))
+
+pf.fc_by_age_gender.wide <- pf.fc_by_age_gender.tmp %>%
+  spread(gender, median_friend_count) %>%
+  mutate(ratio = male / female)
+
+head(pf.fc_by_age_gender.wide)
+```
 
 
 ***
@@ -55,7 +94,10 @@ library(reshape2)
 Notes:
 
 ```{r Ratio Plot}
-
+ggplot(aes(x = age, y = female/male),
+       data=pf.fc_by_age_gender.wide) +
+  geom_line() +
+  geom_hline(yintercept = 1, alpha = 0.3, linetype = 2)
 ```
 
 ***
