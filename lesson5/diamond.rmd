@@ -1,0 +1,90 @@
+## libraries
+```{r}
+library(ggplot2)
+library(gridExtra)
+data(diamonds)
+pf <- read.csv('../lesson4/pseudo_facebook.tsv', sep = '\t')
+```
+
+
+## 带有分面和颜色的价格直方图
+```{r}
+ggplot(aes(x = price), data = diamonds) +
+  facet_wrap(~color) +
+  geom_histogram(aes(color = cut)) +
+  scale_fill_brewer(type = 'qual') +
+  scale_x_log10()
+```
+
+## 价格与按切工填色的表格
+
+```{r}
+ggplot(aes(x = table, y = price), data = diamonds) +
+  geom_point(aes(color = cut)) +
+  scale_color_brewer(type = 'qual') +
+  xlim(50, 80)
+```
+
+## 典型表值
+
+```{r}
+summary(subset(diamonds$table, diamonds$cut=="Ideal"))
+
+```
+```{r}
+summary(subset(diamonds$table, diamonds$cut=="Premium"))
+```
+
+## 价格与体积和钻石净度
+
+```{r}
+diamonds$volumn <- diamonds$x * diamonds$y * diamonds$z
+
+ggplot(aes(x = volumn, y = price), 
+       data = subset(diamonds, diamonds$volumn>0)) +
+  geom_point(aes(color = clarity)) +
+  xlim(0, 350) +
+  scale_color_brewer(type = 'div') +
+  scale_y_log10()
+```
+
+## 新建友谊的比例
+```{r}
+names(pf)
+pf$prop_initiated <- pf$friendships_initiated / (pf$friend_count + 1)
+summary(pf$prop_initiated)
+```
+
+## prop_initiated 与使用时长
+
+```{r}
+pf$year_joined <- floor( 2014 - pf$tenure/365.)
+pf$year_joined.bucket <- cut(pf$year_joined, c(2004,2009,2011,2012,2014))
+
+ggplot(aes(x = tenure, y = prop_initiated), 
+       data = subset(pf, pf$friendships_initiated>0)) + 
+  geom_line(aes(color = year_joined.bucket), 
+            stat = 'summary', 
+            fun.y = median)
+```
+
+### 平滑化 prop_initiated 与使用时长
+```{r}
+ggplot(aes(x = tenure, y = prop_initiated), 
+       data = subset(pf, pf$friendships_initiated>0)) + 
+  geom_smooth(aes(color = year_joined.bucket))
+```
+## 最大的 prop_initiated 组
+
+## 最大的组均值 prop_initiated
+
+## 经过分组、分面和填色的价格/克拉
+```{r}
+diamonds$ratio <- diamonds$price/diamonds$carat
+summary(diamonds$ratio)
+ggplot(aes(x = cut, y = ratio), data=diamonds) +
+  geom_jitter(aes(color = color)) +
+  facet_wrap(~clarity) +
+  scale_color_brewer(type = 'div')
+```
+
